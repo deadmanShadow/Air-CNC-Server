@@ -78,13 +78,42 @@ async function run() {
     })
 
     // Get a single room
+
+    // app.get('/room/:id', async (req, res) => {
+    //   const id = req.params.id
+    //   const query = { _id: new ObjectId(id) }
+    //   const result = await roomsCollection.findOne(query)
+    //   console.log(result)
+    //   res.send(result)
+    // })
+
+
     app.get('/room/:id', async (req, res) => {
-      const id = req.params.id
-      const query = { _id: new ObjectId(id) }
-      const result = await roomsCollection.findOne(query)
-      console.log(result)
-      res.send(result)
-    })
+      try {
+        const id = req.params.id;
+    
+        // Validate the id format
+        const idRegex = /^[0-9a-fA-F]{24}$/;
+        if (!idRegex.test(id)) {
+          return res.status(400).json({ error: 'Invalid room id format' });
+        }
+    
+        const query = { _id: new ObjectId(id) };
+        const result = await roomsCollection.findOne(query);
+    
+        if (!result) {
+          // Handle the case when no room is found with the given id
+          return res.status(404).json({ error: 'Room not found' });
+        }
+    
+        console.log(result);
+        res.send(result);
+      } catch (error) {
+        // Handle the case when the id is invalid or another error occurs
+        console.error(error);
+        res.status(400).json({ error: 'Invalid room id' });
+      }
+    });
 
     // Save a room in database
     app.post('/rooms', async (req, res) => {
